@@ -70,9 +70,14 @@ namespace mkanta
             p | tag<LineNum>{};
         }
         template<class Type, size_t ...Seq>
-        void bind_all(Type* p, std::index_sequence<Seq...>)
+        void bind_all_impl(Type* p, std::index_sequence<Seq...>)
         {
             (bind<Type, Seq>(p), ...);
+        }
+        template<class Type>
+        void bind_all(Type* p)
+        {
+            bind_all_impl(p, detail::make_sequence<Type>());
         }
     }
 
@@ -91,7 +96,7 @@ namespace mkanta
         {
             [[maybe_unused]] static const bool init = [] {
                 Type* p = nullptr;
-                detail::bind_all(p, detail::make_sequence<Type>());
+                detail::bind_all(p);
                 return true;
             }();
             return regist_internal<PointerType>(name);

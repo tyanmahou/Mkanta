@@ -125,12 +125,23 @@ namespace mkanta
     }\
 }()
 
-#define REFLECTION2(name, line, ...)\
+#define MKANTA_PP_IMPL_OVERLOAD(e1, e2, NAME, ...) NAME
+#define MKANTA_PP_IMPL_3(name, line, type)\
 ]] friend void operator | (auto* a, ::mkanta::detail::tag<line>)\
 {\
     static_assert(line < ::mkanta::detail::BIND_MAX_LINES);\
     using this_type = std::decay_t<decltype(*a)>;\
-    [[maybe_unused]]static const auto regist = ::mkanta::reflect<this_type>::regist(MKANTA_FIX_CHARTYPE_PREFIX(name), __VA_OPT__((__VA_ARGS__))&this_type::name);\
+    [[maybe_unused]]static const auto regist = ::mkanta::reflect<this_type>::regist(MKANTA_FIX_CHARTYPE_PREFIX(name), static_cast<type>(&this_type::name));\
 }[[
+
+#define MKANTA_PP_IMPL_2(name, line)\
+]] friend void operator | (auto* a, ::mkanta::detail::tag<line>)\
+{\
+    static_assert(line < ::mkanta::detail::BIND_MAX_LINES);\
+    using this_type = std::decay_t<decltype(*a)>;\
+    [[maybe_unused]]static const auto regist = ::mkanta::reflect<this_type>::regist(MKANTA_FIX_CHARTYPE_PREFIX(name), &this_type::name);\
+}[[
+#define MKANTA_EXPAND(x) x
+#define REFLECTION2(name, ...) MKANTA_EXPAND(MKANTA_PP_IMPL_OVERLOAD(__VA_ARGS__, MKANTA_PP_IMPL_3, MKANTA_PP_IMPL_2)(name, __VA_ARGS__))
 
 #define REFLECTION(name, ...) REFLECTION2(name, __LINE__, __VA_ARGS__)

@@ -148,7 +148,7 @@
     <ClInclude Include="include\mkanta.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="examples\overload\main.cpp" />
+    <ClCompile Include="examples\char_custom\main.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

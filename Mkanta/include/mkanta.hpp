@@ -42,21 +42,6 @@ namespace mkanta
     {
         struct dummy {};
 
-        template<auto x>
-        consteval string_view signature()
-        {
-            if constexpr (std::same_as<char_type, char8_t>) {
-                return u8"" __FUNCSIG__;
-            } else if constexpr (std::same_as<char_type, char16_t>) {
-                return u"" __FUNCSIG__;
-            } else if constexpr (std::same_as<char_type, char32_t>) {
-                return U"" __FUNCSIG__;
-            } else if constexpr (std::same_as<char_type, wchar_t>) {
-                return L"" __FUNCSIG__;
-            } else {
-                return __FUNCSIG__;
-            }
-        }
         template<class Type>
         consteval string_view signature()
         {

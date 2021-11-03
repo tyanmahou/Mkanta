@@ -1,7 +1,7 @@
 #include <iostream>
 #include <mkanta.hpp>
 
-struct [[REFLECTION_STRUCT(Test)]] Test
+struct Test
 {
     [[REFLECTION(func)]]
     void func() { std::cout << "Hello, Mkanta! Func" << std::endl; }

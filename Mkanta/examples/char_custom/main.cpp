@@ -4,12 +4,11 @@
 #define MKANTA_CHARTYPE wchar_t
 #include <mkanta.hpp>
 
-struct [[REFLECTION_STRUCT(Test)]] Test
+struct Test
 {
     [[REFLECTION(func)]]
     static void func(int a) { std::cout << a << std::endl; }
 };
-
 int main()
 {
     using mkanta::reflect;

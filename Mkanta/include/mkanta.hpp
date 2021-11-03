@@ -154,6 +154,19 @@ namespace mkanta
         {
             bind_all_impl(p, detail::make_sequence<Type>());
         }
+
+        template<class Type>
+        struct initializer_impl
+        {
+            initializer_impl()
+            {
+                [[maybe_unused]] static const bool init = [] {
+                    Type* p = nullptr;
+                    detail::bind_all(p);
+                    return true;
+                }();
+            }
+        };
     }
 
     struct gobal_scope{};
@@ -186,20 +199,10 @@ namespace mkanta
     };
 
     template<class Type>
-    struct initilizer
+    struct initializer
     {
-        initilizer()
-        {
-            [[maybe_unused]] static const bool init = [] {
-                Type* p = nullptr;
-                detail::bind_all(p);
-                return true;
-            }();
-        }
+        inline static const detail::initializer_impl<Type> impl;
     };
-
-    template<class Type>
-    inline initilizer<Type> initilizer_v;
 }
 
 #define MKANTA_PP_IMPL_OVERLOAD(e1, e2, NAME, ...) NAME
@@ -210,8 +213,9 @@ namespace mkanta
     using this_type = std::decay_t<decltype(*a)>;\
     [[maybe_unused]]static const auto regist = ::mkanta::reflect<this_type>::regist(MKANTA_FIX_CHARTYPE_PREFIX(name), static_cast<type>(&this_type::name));\
     [[maybe_unused]]static const auto regist_global = ::mkanta::reflect<>::regist(::mkanta::detail::nameof<this_type, static_cast<type>(&this_type::name)>(), static_cast<type>(&this_type::name));\
-}[[
-
+}\
+auto _reflection_init(::mkanta::detail::tag<line>) ->::mkanta::initializer<std::decay_t<decltype(*this)>>{return{};}\
+[[
 #define MKANTA_PP_IMPL_2(name, line)\
 ]] friend void operator | (auto* a, ::mkanta::detail::tag<line>)\
 {\
@@ -219,14 +223,10 @@ namespace mkanta
     using this_type = std::decay_t<decltype(*a)>;\
     [[maybe_unused]]static const auto regist = ::mkanta::reflect<this_type>::regist(MKANTA_FIX_CHARTYPE_PREFIX(name), &this_type::name);\
     [[maybe_unused]]static const auto regist_global = ::mkanta::reflect<>::regist(::mkanta::detail::nameof<this_type, &this_type::name>(), &this_type::name);\
-}[[
+}\
+auto _reflection_init(::mkanta::detail::tag<line>) ->::mkanta::initializer<std::decay_t<decltype(*this)>>{return{};}\
+[[
 #define MKANTA_EXPAND(x) x
 #define REFLECTION2(name, ...) MKANTA_EXPAND(MKANTA_PP_IMPL_OVERLOAD(__VA_ARGS__, MKANTA_PP_IMPL_3, MKANTA_PP_IMPL_2)(name, __VA_ARGS__))
 
 #define REFLECTION(name, ...) REFLECTION2(name, __LINE__, __VA_ARGS__)
-
-
-#define REFLECTION_EXPORT(key, type_name) \
-]] type_name; inline static const ::mkanta::initilizer<type_name> reflect_init_##type_name## = {}; key [[
-#define REFLECTION_STRUCT(type_name) REFLECTION_EXPORT(struct, type_name)
-#define REFLECTION_CLASS(type_name) REFLECTION_EXPORT(class, type_name)

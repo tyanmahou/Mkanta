@@ -58,7 +58,7 @@ namespace mkanta
             }
         }
         template<class Type>
-        consteval string_view nameof_ws()
+        consteval string_view nameof_ns()
         {
             constexpr auto sig = signature<Type>();
             constexpr auto len = sig.length();
@@ -70,7 +70,7 @@ namespace mkanta
         template<class Type>
         consteval string_view nameof()
         {
-            constexpr auto result = nameof_ws<Type>();
+            constexpr auto result = nameof_ns<Type>();
             return result.substr(result.find_last_of(MKANTA_FIX_CHARTYPE_PREFIX(:)) + 1);
         }
 
@@ -82,8 +82,10 @@ namespace mkanta
         template<class Type, class Name, auto FuncPointer>
         struct initializer
         {
-            inline static string_type fullName = string_type(nameof_ws<Type>()) + string_type(MKANTA_FIX_CHARTYPE_PREFIX(::)) + string_type(nameof<Name>());
-            inline static const detail::dummy regist = reflect<Type>::regist(nameof<Name>(), FuncPointer);
+        private:
+            inline static string_view name = nameof<Name>();
+            inline static string_type fullName = string_type(nameof_ns<Type>()) + string_type(MKANTA_FIX_CHARTYPE_PREFIX(::)) + string_type(name);
+            inline static const detail::dummy regist = reflect<Type>::regist(name, FuncPointer);
             inline static const detail::dummy regist_global = reflect<gobal_scope>::regist(fullName, FuncPointer);
         };
     }

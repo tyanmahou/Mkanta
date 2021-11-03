@@ -10,7 +10,7 @@ struct Test
     void func(int a, int b) { std::cout << a * b << std::endl; }
 
     [[REFLECTION(func, void(Test::*)(double))]]
-    void func(double a) { std::cout << a  << std::endl; }
+    void func(double a) { std::cout << a << std::endl; }
 };
 
 int main()

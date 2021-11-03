@@ -4,14 +4,7 @@
 
 struct Test
 {
-    //[[REFLECTION(func)]]
-    auto a()
-    {
-        return ::mkanta::detail::initializer<
-            std::decay_t<decltype(*this)>,
-            std::decay_t<decltype(*this)>::func
-        >{};
-    }
+    [[REFLECTION(func)]]
     static void func(int a) { std::cout << a << std::endl; }
 };
 int main()

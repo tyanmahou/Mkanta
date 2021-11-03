@@ -1,19 +1,43 @@
 #include <iostream>
 #include <mkanta.hpp>
-#include <functional>
 
 struct Test
 {
     [[REFLECTION(func)]]
-    static void func(int a) { std::cout << a << std::endl; }
+    void func() { std::cout << "Hello, Mkanta! Func" << std::endl; }
+
+    [[REFLECTION(staticFunc)]]
+    static void staticFunc() { std::cout << "Hello, Mkanta! Static Func" << std::endl; }
+
+    [[REFLECTION(member)]]
+    std::string member = "member";
+
+    [[REFLECTION(staticMember)]]
+    inline static std::string staticMember = "static member";
 };
+
 int main()
 {
     using mkanta::reflect;
-    if (auto func = reflect<Test>::find<void(*)(int)>("func")) {
-        (*func)(10);
+    // reflection member func
+    if (auto func = reflect<>::find<void(Test::*)()>("Test::func")) {
+        Test a;
+        (a.*func)();
     }
-    if (auto func = reflect<>::find<void(*)(int)>("Test::func")) {
-        (*func)(10);
+
+    // reflection static member func
+    if (auto sfunc = reflect<>::find<void(*)()>("Test::staticFunc")) {
+        (*sfunc)();
+    }
+
+    // reflection static member obj
+    if (auto mem = reflect<>::find<std::string Test::*>("Test::member")) {
+        Test a;
+        std::cout << (a.*mem) << std::endl;
+    }
+
+    // reflection member
+    if (auto smem = reflect<>::find<std::string*>("Test::staticMember")) {
+        std::cout << *smem << std::endl;
     }
 }

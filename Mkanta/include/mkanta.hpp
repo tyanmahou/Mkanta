@@ -42,6 +42,41 @@ namespace mkanta
     {
         struct dummy {};
 
+#if __clang__
+        template<class Type>
+        consteval string_view signature()
+        {
+            static_assert(std::is_same_v<char_type, char>, "clang support only char type");
+            return __PRETTY_FUNCTION__;
+        }
+        template<class Type>
+        consteval string_view nameof_ns()
+        {
+            constexpr auto sig = signature<Type>();
+            constexpr auto len = sig.length();
+            constexpr auto prefixLen = sig.find(MKANTA_FIX_CHARTYPE_PREFIX(Type = ))
+                + sizeof("Type = ") - 1;
+            constexpr auto suffixLen = sizeof("]") - 1;
+            return sig.substr(prefixLen, len - prefixLen - suffixLen);
+        }
+#elif __GNUC__
+        template<class Type>
+        consteval string_view signature()
+        {
+            static_assert(std::is_same_v<char_type, char>, "gcc support only char type");
+            return __PRETTY_FUNCTION__;
+        }
+        template<class Type>
+        consteval string_view nameof_ns()
+        {
+            constexpr auto sig = signature<Type>();
+            constexpr auto len = sig.length();
+            constexpr auto prefixLen = sig.find(MKANTA_FIX_CHARTYPE_PREFIX(with Type = ))
+                + sizeof("with Type = ") - 1;
+            constexpr auto suffixLen = sizeof("; mkanta::detail::string_view = std::basic_string_view<char>]") - 1;
+            return sig.substr(prefixLen, len - prefixLen - suffixLen);
+        }
+#elif _MSC_VER
         template<class Type>
         consteval string_view signature()
         {
@@ -67,6 +102,7 @@ namespace mkanta
             constexpr auto suffixLen = sizeof(">(void)") - 1;
             return sig.substr(prefixLen, len - prefixLen - suffixLen);
         }
+#endif
         template<class Type>
         consteval string_view nameof()
         {
@@ -77,16 +113,6 @@ namespace mkanta
         template<size_t Line>
         struct tag
         {
-        };
-
-        template<class Type, class Name, auto FuncPointer>
-        struct initializer
-        {
-        private:
-            inline static string_view name = nameof<Name>();
-            inline static string_type fullName = string_type(nameof_ns<Type>()) + string_type(MKANTA_FIX_CHARTYPE_PREFIX(::)) + string_type(name);
-            inline static const detail::dummy regist = reflect<Type>::regist(name, FuncPointer);
-            inline static const detail::dummy regist_global = reflect<gobal_scope>::regist(fullName, FuncPointer);
         };
     }
 
@@ -113,30 +139,54 @@ namespace mkanta
             return addresses[name];
         }
     };
+
+    namespace detail
+    {
+        template<class Type, class Name, auto FuncPointer>
+        struct reflection_register
+        {
+            reflection_register()
+            {
+                static string_view name = nameof<Name>();
+                static string_type fullName = string_type(nameof_ns<Type>()) + string_type(MKANTA_FIX_CHARTYPE_PREFIX(::)) + string_type(name);
+                [[maybe_unused]] static detail::dummy regist = reflect<Type>::regist(name, FuncPointer);
+                [[maybe_unused]] static detail::dummy regist_globa = reflect<gobal_scope>::regist(fullName, FuncPointer);
+            }
+        };
+        struct initializer
+        {
+            template<class Type, class Name, auto FuncPointer>
+            inline static reflection_register<Type, Name, FuncPointer> regist{};
+        };
+    }
 }
 
 #define MKANTA_PP_IMPL_OVERLOAD(e1, e2, NAME, ...) NAME
 #define MKANTA_PP_IMPL_3(name, line, type)\
 ]] auto _reflection_init(::mkanta::detail::tag<line>)\
 {\
-    return ::mkanta::detail::initializer<\
+    return ::mkanta::detail::initializer::regist<\
         std::decay_t<decltype(*this)>,\
         struct name,\
         static_cast<type>(&std::decay_t<decltype(*this)>::name)\
-    >{};\
+    >;\
 }\
 [[
 #define MKANTA_PP_IMPL_2(name, line)\
 ]] auto _reflection_init(::mkanta::detail::tag<line>)\
 {\
-    return ::mkanta::detail::initializer<\
+    return ::mkanta::detail::initializer::regist<\
         std::decay_t<decltype(*this)>,\
         struct name,\
         &std::decay_t<decltype(*this)>::name\
-    >{};\
+    >;\
 }\
 [[
 #define MKANTA_EXPAND(x) x
 #define REFLECTION2(name, ...) MKANTA_EXPAND(MKANTA_PP_IMPL_OVERLOAD(__VA_ARGS__, MKANTA_PP_IMPL_3, MKANTA_PP_IMPL_2)(name, __VA_ARGS__))
 
-#define REFLECTION(name, ...) REFLECTION2(name, __LINE__, __VA_ARGS__)
+#if _MSC_VER
+#define REFLECTION(name, ...) REFLECTION2(name, __LINE__ , __VA_ARGS__)
+#else
+#define REFLECTION(name, ...) REFLECTION2(name, __LINE__ __VA_OPT__(,) __VA_ARGS__)
+#endif

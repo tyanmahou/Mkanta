@@ -228,5 +228,5 @@ namespace mkanta
 
 #define REFLECTION_EXPORT(key, type_name) \
 ]] type_name; inline static const ::mkanta::initilizer<type_name> reflect_init_##type_name## = {}; key [[
-#define REFLECTION_EXPORT_S(type_name) REFLECTION_EXPORT(struct, type_name)
-#define REFLECTION_EXPORT_C(type_name) REFLECTION_EXPORT(class, type_name)
+#define REFLECTION_STRUCT(type_name) REFLECTION_EXPORT(struct, type_name)
+#define REFLECTION_CLASS(type_name) REFLECTION_EXPORT(class, type_name)

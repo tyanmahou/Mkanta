@@ -2,7 +2,7 @@
 #include <mkanta.hpp>
 #include <functional>
 
-struct [[REFLECTION_EXPORT_S(Test)]] Test
+struct [[REFLECTION_STRUCT(Test)]] Test
 {
     [[REFLECTION(func)]]
     static void func(int a) { std::cout << a << std::endl; }

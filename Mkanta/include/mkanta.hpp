@@ -171,11 +171,6 @@ namespace mkanta
         template<class PointerType>
         static PointerType find(detail::string_view name)
         {
-            [[maybe_unused]] static const bool init = [] {
-                Type* p = nullptr;
-                detail::bind_all(p);
-                return true;
-            }();
             return regist_internal<PointerType>(name);
         }
     private:
@@ -190,6 +185,21 @@ namespace mkanta
         }
     };
 
+    template<class Type>
+    struct initilizer
+    {
+        initilizer()
+        {
+            [[maybe_unused]] static const bool init = [] {
+                Type* p = nullptr;
+                detail::bind_all(p);
+                return true;
+            }();
+        }
+    };
+
+    template<class Type>
+    inline initilizer<Type> initilizer_v;
 }
 
 #define MKANTA_PP_IMPL_OVERLOAD(e1, e2, NAME, ...) NAME
@@ -214,3 +224,9 @@ namespace mkanta
 #define REFLECTION2(name, ...) MKANTA_EXPAND(MKANTA_PP_IMPL_OVERLOAD(__VA_ARGS__, MKANTA_PP_IMPL_3, MKANTA_PP_IMPL_2)(name, __VA_ARGS__))
 
 #define REFLECTION(name, ...) REFLECTION2(name, __LINE__, __VA_ARGS__)
+
+
+#define REFLECTION_EXPORT(key, type_name) \
+]] type_name; inline static const ::mkanta::initilizer<type_name> reflect_init_##type_name## = {}; key [[
+#define REFLECTION_EXPORT_S(type_name) REFLECTION_EXPORT(struct, type_name)
+#define REFLECTION_EXPORT_C(type_name) REFLECTION_EXPORT(class, type_name)

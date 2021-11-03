@@ -12,7 +12,7 @@ Header Include Only `mkanta.hpp`
 ## Example
 
 ```cpp
-struct Test
+struct [[REFLECTION_EXPORT_S(Test)]] Test
 {
     [[REFLECTION(func)]]
     void func() { std::cout << "Hello, Mkanta! Func" << std::endl; }
@@ -58,7 +58,7 @@ int main()
 You can resolve function overloads by explicit the type.
 
 ```cpp
-struct Test
+struct [[REFLECTION_EXPORT_S(Test)]] Test
 {
     [[REFLECTION(func, void(Test::*)(int))]]
     void func(int a) { std::cout << a << std::endl; }

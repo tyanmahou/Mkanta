@@ -4,7 +4,7 @@
 #define MKANTA_CHARTYPE wchar_t
 #include <mkanta.hpp>
 
-struct Test
+struct [[REFLECTION_EXPORT_S(Test)]] Test
 {
     [[REFLECTION(func)]]
     static void func(int a) { std::cout << a << std::endl; }

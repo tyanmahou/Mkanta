@@ -1,7 +1,7 @@
 #include <iostream>
 #include <mkanta.hpp>
 
-struct Test
+struct [[REFLECTION_EXPORT_S(Test)]] Test
 {
     [[REFLECTION(func, void(Test::*)(int))]]
     void func(int a) { std::cout << a << std::endl; }

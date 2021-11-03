@@ -2,11 +2,12 @@
 #include <mkanta.hpp>
 #include <functional>
 
-struct Test
+struct [[REFLECTION_EXPORT_S(Test)]] Test
 {
     [[REFLECTION(func)]]
     static void func(int a) { std::cout << a << std::endl; }
 };
+
 int main()
 {
     using mkanta::reflect;

@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include <memory>
 #include <unordered_map>
 #include <string_view>
@@ -114,6 +114,29 @@ namespace mkanta
         struct tag
         {
         };
+
+        template<class T>
+        concept registable_pointer = std::is_pointer_v<T> ||
+            std::is_member_object_pointer_v<T> ||
+            std::is_member_function_pointer_v<T>;
+
+        template<class T>
+        struct regist_type;
+
+        template<registable_pointer T>
+        struct regist_type<T>
+        {
+            using type = T;
+        };
+
+        template<class Ret, class... Args>
+        struct regist_type<Ret(Args...)>
+        {
+            using type = Ret(*)(Args...);
+        };
+
+        template<class T>
+        using regist_type_t = typename regist_type<T>::type;
     }
 
     template<class Type = gobal_scope>
@@ -122,14 +145,14 @@ namespace mkanta
         template<class PointerType>
         static detail::dummy regist(detail::string_view name, PointerType adress)
         {
-            regist_internal<PointerType>(name) = adress;
+            regist_internal<detail::regist_type_t<PointerType>>(name) = adress;
             return {};
         }
 
-        template<class PointerType>
-        static PointerType find(detail::string_view name)
+        template<class PointerType = void()>
+        static detail::regist_type_t<PointerType> find(detail::string_view name)
         {
-            return regist_internal<PointerType>(name);
+            return regist_internal<detail::regist_type_t<PointerType>>(name);
         }
     private:
         template<class PointerType>

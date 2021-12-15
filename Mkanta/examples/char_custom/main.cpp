@@ -1,4 +1,4 @@
-#include <iostream>
+﻿#include <iostream>
 
 // You can change base char type
 #define MKANTA_CHARTYPE wchar_t

@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include <memory>
 #include <unordered_map>
 #include <string_view>
@@ -97,8 +97,9 @@ namespace mkanta
         {
             constexpr auto sig = signature<Type>();
             constexpr auto len = sig.length();
+            constexpr auto isStruct = sig.find(MKANTA_FIX_CHARTYPE_PREFIX(mkanta::detail::signature<struct)) != -1;
             constexpr auto prefixLen = sig.find(MKANTA_FIX_CHARTYPE_PREFIX(mkanta::detail::signature))
-                + sizeof("mkanta::detail::signature<struct ") - 1;
+                + (isStruct ? sizeof("mkanta::detail::signature<struct ") : sizeof("mkanta::detail::signature<class "))- 1;
             constexpr auto suffixLen = sizeof(">(void)") - 1;
             return sig.substr(prefixLen, len - prefixLen - suffixLen);
         }
